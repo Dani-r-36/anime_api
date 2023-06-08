@@ -1,12 +1,14 @@
 from urllib.request import urlopen
 import psycopg2
 import psycopg2.extras
+import re
 from bs4 import BeautifulSoup
 from rich.console import Console
 
 console = Console()
 
 ANIME_SEARCH = "https://myanimelist.net/anime.php?cat=anime&q="
+ANIME_HOME = "https://myanimelist.net/anime.php"
 
 def get_html(url):
     """opens bbc website for extraction"""
@@ -55,11 +57,30 @@ def extract_anime_info(soup):
     print(paragraph)
     print(score, ranked, popular)
 
+def get_anime_genre(soup):
+    anime_genre_split = []
+    anime_genre_link = []
+    genres = soup.select('div.normal_header.pt24.mb0')
+    for genre in genres:
+        heading = genre.text
+        if heading == "Genres" or heading == "Themes":
+            genre_content = genre.find_next_sibling('div')
+            link = genre_content.select('a.genre-name-link')
+            href_link = [a['href'] for a in link]
+            genre_split = [s.strip() + ')' for s in re.split(r'\)(?=[A-Z])', genre_content.text) if s.strip()]
+            anime_genre_split.extend(genre_split)
+            anime_genre_link.extend(href_link)
+    return anime_genre_link, anime_genre_split
+
 
 if __name__ == "__main__":
-    requested_anime = input("Enter anime to search\n")
-    search_url = f"{ANIME_SEARCH}{requested_anime}"
-    soup = parse_anime(search_url)
-    anime_url = get_anime_similar(soup)
-    anime_soup = parse_anime(anime_url)
-    extract_anime_info(anime_soup)
+    # requested_anime = input("Enter anime to search\n")
+    # search_url = f"{ANIME_SEARCH}{requested_anime}"
+    # soup = parse_anime(search_url)
+    # anime_url = get_anime_similar(soup)
+    # anime_soup = parse_anime(anime_url)
+    # extract_anime_info(anime_soup)
+
+    requested_genre = input("Enter genre/theme of anime\n")
+    genre_soup = parse_anime(ANIME_HOME)
+    get_anime_genre(genre_soup)
