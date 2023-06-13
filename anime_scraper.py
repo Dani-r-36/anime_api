@@ -2,10 +2,12 @@ from urllib.request import urlopen
 import psycopg2
 import psycopg2.extras
 import re
+import json
 from bs4 import BeautifulSoup
 from rich.console import Console
 from rapidfuzz import fuzz
-
+from flask import Flask, current_app, request, jsonify, render_template
+app = Flask(__name__)
 console = Console()
 
 ANIME_SEARCH = "https://myanimelist.net/anime.php?cat=anime&q="
@@ -24,7 +26,7 @@ def parse_anime(url):
     soup = BeautifulSoup(html, "html.parser")
     return soup
 
-def get_anime_similar(soup):
+def get_anime_similar(soup, query):
     animes_title = []
     animes_url = []
     animes = soup.select("a.hoverinfo_trigger")
@@ -35,21 +37,22 @@ def get_anime_similar(soup):
         url = anime.get('href')
         if url not in animes_url:
             animes_url.append(anime.get('href'))
-    anime_url = check_request(animes_title, animes_url, "anime")
-    return anime_url
+    anime_url, anime_title = check_request(animes_title, animes_url, "anime", query)
+    if anime_title == None:
+        return None, animes_title
+    return anime_url, anime_title
 
-def check_request(animes, animes_url, type_request):
-    console.print(animes)
+def check_request(animes, animes_url, type_request, query):
     found = False
     while found == False:
-        anime_request = input(f"Enter {type_request} from list\n")
         for anime in animes:
-            if int(fuzz.partial_ratio(anime_request, anime)) > 85:
-                found = True
-                break
-    return animes_url[animes.index(anime)]
+            if query == anime:
+                return animes_url[animes.index(anime)], anime
+            if int(fuzz.partial_ratio(query, anime)) > 86:
+                return animes_url[animes.index(anime)], anime
+        return None, None
 
-def extract_anime_info(soup):
+def extract_anime_info(soup, anime_title):
     details = soup.find("div", {"class": "stats-block po-r clearfix"})
     score_div = details.find("div", {"class": "score-label"})
     score = score_div.text
@@ -59,10 +62,16 @@ def extract_anime_info(soup):
     popular = popular_span.strong.text
     paragraph_p = soup.find("p", {"itemprop":"description"})
     paragraph = paragraph_p.text
-    print(paragraph)
-    print(score, ranked, popular)
+    anime_data = {
+        "name" : anime_title,
+        "synopsis" : paragraph,
+        "score":score,
+        "rank":ranked,
+        "popularity":popular
+    }
+    return json.dumps(anime_data)
 
-def get_anime_genre(soup):
+def get_anime_genre(soup, query):
     anime_genre_split = []
     anime_genre_link = []
     genres = soup.select('div.normal_header.pt24.mb0')
@@ -75,10 +84,10 @@ def get_anime_genre(soup):
             genre_split = [s.strip() + ')' for s in re.split(r'\)(?=[A-Z])', genre_content.text) if s.strip()]
             anime_genre_split.extend(genre_split)
             anime_genre_link.extend(href_link)
-    anime_url = check_request(anime_genre_split, anime_genre_link, "genre")
-    return anime_url
+    anime_url, actual_genre = check_request(anime_genre_split, anime_genre_link, "genre", query)
+    return anime_url, anime_genre_split, actual_genre
 
-def extract_anime_genre_info(animes_soup):
+def extract_anime_genre_info(animes_soup, query):
     anime_list = []
     anime_urls = []
     genre_animes = animes_soup.select("div.js-anime-category-producer.seasonal-anime.js-seasonal-anime.js-anime-type-all.js-anime-type-1")
@@ -87,20 +96,54 @@ def extract_anime_genre_info(animes_soup):
         url = anime_details_better[0].find("a")
         anime_list.append(anime_details_better[0].text)
         anime_urls.append(url["href"])
-    anime_url = check_request(anime_list, anime_urls, "anime")
-    return anime_url
+    return anime_urls, anime_list
+
+@app.route('/', methods=["GET"])
+def index():
+    return render_template('home.html')
+
+@app.route("/anime/search", methods=["GET"])
+def search():
+    query = request.args.get('query')
+    if " " in query:
+        url_query = query.replace(" ", "%20")
+    search_url = f"{ANIME_SEARCH}{url_query}"
+    soup = parse_anime(search_url)
+    anime_url, anime_title = get_anime_similar(soup, query)
+    if anime_url == None:
+        return jsonify({"animes":anime_title})
+    anime_soup = parse_anime(anime_url)
+    return extract_anime_info(anime_soup, anime_title)
+
+@app.route("/anime/allgenres", methods=["GET"])
+def all_genres():
+    genre_soup = parse_anime(ANIME_HOME)
+    anime_genres_url, all_anime_genres, temp = get_anime_genre(genre_soup, None)
+    return jsonify({"anime_genres": all_anime_genres})
+
+@app.route("/anime/genre", methods=["GET"])
+def genre_search():
+    query = request.args.get('query')
+    if " " in query:
+        anime_genres_url = query.replace(" ", "%20")
+    genre_soup = parse_anime(ANIME_HOME)
+    anime_genres_url, all_anime_genres, requested_genre = get_anime_genre(genre_soup, query)
+    anime_genre_soup = parse_anime(f"{ANIME_DEFAULT}{anime_genres_url}")
+    anime_genre_urls, anime_genres = extract_anime_genre_info(anime_genre_soup,requested_genre)
+    return jsonify({f"{query} animes": anime_genres})
 
 if __name__ == "__main__":
+    app.run(debug=True, host='0.0.0.0', port=5001)
     # requested_anime = input("Enter anime to search\n")
+    # if " " in requested_anime:
+    #     requested_anime = requested_anime.replace(" ", "%20")
     # search_url = f"{ANIME_SEARCH}{requested_anime}"
     # soup = parse_anime(search_url)
-    # anime_url = get_anime_similar(soup)
+    # anime_url, anime_title = get_anime_similar(soup)
     # anime_soup = parse_anime(anime_url)
-    # extract_anime_info(anime_soup)
-
-    genre_soup = parse_anime(ANIME_HOME)
-    anime_genres_url = get_anime_genre(genre_soup)
-    anime_genre_soup = parse_anime(f"{ANIME_DEFAULT}{anime_genres_url}")
-    anime_genre_url = extract_anime_genre_info(anime_genre_soup)
-    anime_genre_soup = parse_anime(anime_genre_url)
-    extract_anime_info(anime_genre_soup)
+    # print(extract_anime_info(anime_soup, anime_title))
+    # query = input("genre request")
+    # genre_soup = parse_anime(ANIME_HOME)
+    # anime_genres_url, all_anime_genres, requested_genre = get_anime_genre(genre_soup, query)
+    # anime_genre_soup = parse_anime(f"{ANIME_DEFAULT}{anime_genres_url}")
+    # anime_genre_urls, anime_genres = extract_anime_genre_info(anime_genre_soup,requested_genre)
