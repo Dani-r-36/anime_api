@@ -1,4 +1,5 @@
 from urllib.request import urlopen
+from urllib.error import URLError
 import psycopg2
 import psycopg2.extras
 import re
@@ -22,9 +23,13 @@ def get_html(url):
     return html
 
 def parse_anime(url):
-    html = get_html(url)
-    soup = BeautifulSoup(html, "html.parser")
-    return soup
+    try:
+        html = get_html(url)
+        soup = BeautifulSoup(html, "html.parser")
+        return soup
+    except URLError as err:
+        print(err)
+        return "error"
 
 def get_anime_similar(soup, query):
     animes_title = []
@@ -104,16 +109,27 @@ def index():
 
 @app.route("/anime/search", methods=["GET"])
 def search():
-    query = request.args.get('query')
-    if " " in query:
-        url_query = query.replace(" ", "%20")
-    search_url = f"{ANIME_SEARCH}{url_query}"
-    soup = parse_anime(search_url)
-    anime_url, anime_title = get_anime_similar(soup, query)
-    if anime_url == None:
-        return jsonify({"animes":anime_title})
-    anime_soup = parse_anime(anime_url)
-    return extract_anime_info(anime_soup, anime_title)
+    try:
+        if query == None or query == '':
+            raise ValueError
+        query = request.args.get('query')
+        if " " in query:
+            url_query = query.replace(" ", "%20")
+        search_url = f"{ANIME_SEARCH}{url_query}"
+        soup = parse_anime(search_url)
+        if soup == "error":
+            raise ValueError
+        anime_url, anime_title = get_anime_similar(soup, query)
+        if anime_url == None:
+            return jsonify({"animes":anime_title})
+        anime_soup = parse_anime(anime_url)
+        if anime_soup == "error":
+            raise ValueError
+        return extract_anime_info(anime_soup, anime_title)
+    
+    except ValueError as err:
+        print (err)
+        return "Invalid query"
 
 @app.route("/anime/allgenres", methods=["GET"])
 def all_genres():
@@ -124,13 +140,25 @@ def all_genres():
 @app.route("/anime/genre", methods=["GET"])
 def genre_search():
     query = request.args.get('query')
-    if " " in query:
-        anime_genres_url = query.replace(" ", "%20")
-    genre_soup = parse_anime(ANIME_HOME)
-    anime_genres_url, all_anime_genres, requested_genre = get_anime_genre(genre_soup, query)
-    anime_genre_soup = parse_anime(f"{ANIME_DEFAULT}{anime_genres_url}")
-    anime_genre_urls, anime_genres = extract_anime_genre_info(anime_genre_soup,requested_genre)
-    return jsonify({f"{query} animes": anime_genres})
+    try:
+        if query == None or query == '':
+            raise ValueError
+        if " " in query:
+            anime_genres_url = query.replace(" ", "%20")
+        genre_soup = parse_anime(ANIME_HOME)
+        if genre_soup == "error":
+            raise ValueError
+        anime_genres_url, all_anime_genres, requested_genre = get_anime_genre(genre_soup, query)
+        anime_genre_soup = parse_anime(f"{ANIME_DEFAULT}{anime_genres_url}")
+        if anime_genre_soup == "error":
+            raise ValueError
+        anime_genre_urls, anime_genres = extract_anime_genre_info(anime_genre_soup,requested_genre)
+        return jsonify({f"{query} animes": anime_genres})
+    
+    except ValueError as err:
+        print (err)
+        return ("Invalid query")
+    
 
 if __name__ == "__main__":
     app.run(debug=True, host='0.0.0.0', port=5001)
