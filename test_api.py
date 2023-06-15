@@ -1,5 +1,6 @@
 import json
 from unittest.mock import patch
+import unittest.mock as mock
 import pytest
 from urllib.error import URLError
 from flask import jsonify
@@ -67,8 +68,8 @@ def test_anime_info():
                 </body>
             </html>
                     """
-    mock_soup = BeautifulSoup(html, 'html.parser')
-    response = extract_anime_info(mock_soup, "Anime 1")
+    mock_soup_anime = BeautifulSoup(html, 'html.parser')
+    response = extract_anime_info(mock_soup_anime, "Anime 1")
     data = {
         "name" : "Anime 1",
         "synopsis" : "description of anime",
@@ -79,7 +80,9 @@ def test_anime_info():
     assert response == json.dumps(data)
 
 def test_parse_anime_invalid_query():
-    with pytest.raises(URLError):
-        parse_anime(None)
+    with mock.patch("anime_scraper.get_html") as mock_get_html:
+        mock_get_html.side_effect =URLError("Mocked URLError")
+        result = parse_anime("https://fake.com")
+        assert result == "error"
     # with pytest.raises(URLError):
     #     parse_anime('')
