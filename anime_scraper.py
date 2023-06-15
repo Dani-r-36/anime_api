@@ -115,16 +115,36 @@ def parse_query(query):
     return url_query
 
 def top_anime_extract(top_soup):
+    anime_list = []
+    anime_urls = []
+    type_list = []
+    eps_list = []
+    start_list = []
+    end_list = []
+    score_list = []
     top_anime = top_soup.select("tr.ranking-list")
     for anime in top_anime:
         anime_name = anime.select("h3.hoverinfo_trigger.fl-l.fs14.fw-b.anime_ranking_h3")
         anime_name = anime_name[0].find("a")
         anime_url = anime_name["href"]
         anime_name = anime_name.text
-        anime_details = anime.select("div.information.di-ib.mt4")
-        print(anime_url)
-        print(anime_name)
-        print(anime_details[0])
+        anime_details = anime.select("div.information.di-ib.mt4")[0].text.strip().split('\n')
+        anime_year = anime_details[1].strip().split('\n')
+        start_year, end_year = anime_year[0].split(' - ')
+        start_year = start_year.split()[-1]
+        end_year = end_year.split()[-1]
+        type = anime_details[0].strip().split('\n')
+        type, eps = type[0].split('(')
+        eps, temp = eps.split(" ")
+        score = anime.select("span.text.on.score-label.score-9")
+        score = score[0].text
+        anime_list.append(anime_name)
+        anime_urls.append(anime_url)
+        type_list.append(type)
+        eps_list.append(eps)
+        start_list.append(start_year)
+        end_list.append(end_year)
+        score_list.append(score)
     
 
 if __name__ == "__main__":
