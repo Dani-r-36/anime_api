@@ -114,11 +114,24 @@ def parse_query(query):
         url_query= query
     return url_query
 
-
+def top_anime_extract(top_soup):
+    top_anime = top_soup.select("tr.ranking-list")
+    for anime in top_anime:
+        anime_name = anime.select("h3.hoverinfo_trigger.fl-l.fs14.fw-b.anime_ranking_h3")
+        anime_name = anime_name[0].find("a")
+        anime_url = anime_name["href"]
+        anime_name = anime_name.text
+        anime_details = anime.select("div.information.di-ib.mt4")
+        print(anime_url)
+        print(anime_name)
+        print(anime_details[0])
     
 
 if __name__ == "__main__":
-    app.run(debug=True, host='0.0.0.0', port=5001)
+    # app.run(debug=True, host='0.0.0.0', port=5001)
+
+    top = parse_anime("https://myanimelist.net/topanime.php")
+    top_anime_extract(top)
     # query = input("genre request")
     # genre_soup = parse_anime(ANIME_HOME)
     # anime_genres_url, all_anime_genres, requested_genre = get_anime_genre(genre_soup, query)
