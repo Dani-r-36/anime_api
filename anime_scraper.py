@@ -129,23 +129,35 @@ def top_anime_extract(top_soup):
         anime_url = anime_name["href"]
         anime_name = anime_name.text
         anime_details = anime.select("div.information.di-ib.mt4")[0].text.strip().split('\n')
-        anime_year = anime_details[1].strip().split('\n')
-        start_year, end_year = anime_year[0].split(' - ')
-        start_year = start_year.split()[-1]
-        end_year = end_year.split()[-1]
-        type = anime_details[0].strip().split('\n')
-        type, eps = type[0].split('(')
-        eps, temp = eps.split(" ")
-        score = anime.select("span.text.on.score-label.score-9")
-        score = score[0].text
+        score = anime.select("div.js-top-ranking-score-col.di-ib.al")
+        if len(score) >0:
+            score = score[0].text
+        start_year, end_year, type_genre, eps = additional_top_anime(anime_details)
         anime_list.append(anime_name)
         anime_urls.append(anime_url)
-        type_list.append(type)
+        type_list.append(type_genre)
         eps_list.append(eps)
         start_list.append(start_year)
         end_list.append(end_year)
         score_list.append(score)
-    
+    # print("anime list " , len(anime_list),)
+    # print("anime anime_urls ",len(anime_urls),)
+    # print("type  ",len(type_list),)
+    # print("eps_list  " ,len(eps_list),)
+    # print("start_list  ",(start_list),)
+    # print("end_list  ",(end_list),)
+    # print("score_list  ",len(score_list),)
+    return anime_list, anime_urls, type_list, eps_list, start_list, end_list, score_list
+
+def additional_top_anime(anime_details):
+    anime_year = anime_details[1].strip().split('\n')
+    start_year, end_year = anime_year[0].split(' - ')
+    start_year = start_year.split()[-1]
+    end_year = end_year.split()[-1]
+    type_genre = anime_details[0].strip().split('\n')
+    type_genre, eps = type_genre[0].split('(')
+    eps, temp = eps.split(" ")
+    return start_year, end_year, type_genre, eps
 
 if __name__ == "__main__":
     # app.run(debug=True, host='0.0.0.0', port=5001)
