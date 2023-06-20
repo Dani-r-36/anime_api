@@ -1,0 +1,42 @@
+
+/opt/homebrew/bin/python3: can't open file '/Users/dani/Documents/anime/upload_db.py': [Errno 1] Operation not permitted
+/opt/homebrew/bin/python3: can't open file '/Users/dani/Documents/anime/upload_db.py': [Errno 1] Operation not permitted
+/opt/homebrew/bin/python3: can't open file '/Users/dani/Documents/anime/upload_db.py': [Errno 1] Operation not permitted
+/opt/homebrew/bin/python3: can't open file '/Users/dani/Documents/anime/upload_db.py': [Errno 1] Operation not permitted
+/opt/homebrew/bin/python3: can't open file '/Users/dani/Documents/anime/upload_db.py': [Errno 1] Operation not permitted
+/opt/homebrew/bin/python3: can't open file '/Users/dani/Documents/anime/upload_db.py': [Errno 1] Operation not permitted
+/opt/homebrew/bin/python3: can't open file '/Users/dani/Documents/anime/upload_db.py': [Errno 1] Operation not permitted
+/opt/homebrew/bin/python3: can't open file '/Users/dani/Documents/anime/upload_db.py': [Errno 1] Operation not permitted
+/opt/homebrew/bin/python3: can't open file '/Users/dani/Documents/anime/upload_db.py': [Errno 1] Operation not permitted
+/opt/homebrew/bin/python3: can't open file '/Users/dani/Documents/anime/upload_db.py': [Errno 1] Operation not permitted
+/opt/homebrew/bin/python3: can't open file '/Users/dani/Documents/anime/upload_db.py': [Errno 1] Operation not permitted
+/opt/homebrew/bin/python3: can't open file '/Users/dani/Documents/anime/upload_db.py': [Errno 1] Operation not permitted
+/opt/homebrew/bin/python3: can't open file '/Users/dani/Documents/anime/upload_db.py': [Errno 1] Operation not permitted
+/opt/homebrew/bin/python3: can't open file '/Users/dani/Documents/anime/upload_db.py': [Errno 1] Operation not permitted
+/opt/homebrew/bin/python3: can't open file '/Users/dani/Documents/anime/upload_db.py': [Errno 1] Operation not permitted
+/opt/homebrew/bin/python3: can't open file '/Users/dani/Documents/anime/upload_db.py': [Errno 1] Operation not permitted
+/opt/homebrew/bin/python3: can't open file '/Users/dani/Documents/anime/upload_db.py': [Errno 1] Operation not permitted
+deleted table
+uploaded new table
+deleted table
+uploaded new table
+deleted table
+uploaded new table
+deleted table
+uploaded new table
+deleted table
+uploaded new table
+deleted table
+uploaded new table
+deleted table
+uploaded new table
+deleted table
+uploaded new table
+deleted table
+uploaded new table
+deleted table
+uploaded new table
+deleted table
+uploaded new table
+deleted table
+uploaded new table

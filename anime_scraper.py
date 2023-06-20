@@ -115,15 +115,11 @@ def parse_query(query):
     return url_query
 
 def top_anime_extract(top_soup):
+    anime_info = {}
     anime_list = []
-    anime_urls = []
-    type_list = []
-    eps_list = []
-    start_list = []
-    end_list = []
-    score_list = []
     top_anime = top_soup.select("tr.ranking-list")
     for anime in top_anime:
+        position = int(anime.select("td.rank.ac")[0].text.strip())
         anime_name = anime.select("h3.hoverinfo_trigger.fl-l.fs14.fw-b.anime_ranking_h3")
         anime_name = anime_name[0].find("a")
         anime_url = anime_name["href"]
@@ -133,13 +129,9 @@ def top_anime_extract(top_soup):
         if len(score) >0:
             score = score[0].text
         start_year, end_year, type_genre, eps = additional_top_anime(anime_details)
-        anime_list.append(anime_name)
-        anime_urls.append(anime_url)
-        type_list.append(type_genre)
-        eps_list.append(eps)
-        start_list.append(start_year)
-        end_list.append(end_year)
-        score_list.append(score)
+        anime_info = {"anime":anime_name, "anime_url": anime_url, "type_genre": type_genre,
+                      "eps": eps, "start": start_year, "end": end_year, "score": score}
+        anime_list.append(anime_info)
     # print("anime list " , len(anime_list),)
     # print("anime anime_urls ",len(anime_urls),)
     # print("type  ",len(type_list),)
@@ -147,7 +139,7 @@ def top_anime_extract(top_soup):
     # print("start_list  ",(start_list),)
     # print("end_list  ",(end_list),)
     # print("score_list  ",len(score_list),)
-    return anime_list, anime_urls, type_list, eps_list, start_list, end_list, score_list
+    return anime_list
 
 def additional_top_anime(anime_details):
     anime_year = anime_details[1].strip().split('\n')

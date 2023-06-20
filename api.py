@@ -1,6 +1,7 @@
 from urllib.error import URLError
 from flask import Flask, request, jsonify, render_template
 from anime_scraper import parse_anime, get_anime_similar, extract_anime_genre_info, extract_anime_info, get_anime_genre, parse_query
+from upload_db import get_anime_sql, error_message
 
 ANIME_SEARCH = "https://myanimelist.net/anime.php?cat=anime&q="
 ANIME_HOME = "https://myanimelist.net/anime.php"
@@ -60,6 +61,38 @@ def genre_search():
     except ValueError as err:
         print (err)
         return ("Invalid query")
+    
+@app.route("/top_anime", methods=["GET"])
+def top_anime():
+    try:
+        data = get_top_anime()
+        if len(data) == 0:
+            raise ValueError
+        return data
+    
+    except ValueError as err:
+        print (err)
+        return ("Invalid query")
+    
+def get_top_anime():
+    data = {}
+    anime_list=[]
+    unique_curs = get_anime_sql()
+    for row in unique_curs:
+        renamed_row = {
+            'position': row['animes_id'], 
+            'anime': row['anime'],
+            'start_date_id': row['start_date_id'],
+            'end_date_id': row['end_date_id'],
+            'show_type_id': row['show_type_id'],
+            'episodes': row['episodes'],
+            'score': row['score']
+        }
+        anime_list.append(renamed_row)
+    if len(anime_list) == 0:
+        return error_message("oops no animes",404)
+    data['Top 50 animes'] = anime_list
+    return data
     
 if __name__ == "__main__":
     app.run(debug=True, host='0.0.0.0', port=5001)
