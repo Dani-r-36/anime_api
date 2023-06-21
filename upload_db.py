@@ -1,3 +1,4 @@
+"""Uploads top 50 data to database"""
 import psycopg2
 import psycopg2.extras 
 from dotenv import dotenv_values
@@ -16,7 +17,7 @@ def get_db_connection():
 conn = get_db_connection()
 
 def adding_animes(anime_titles, start_id, end_id, show_type_id):
-    """carrys out insert for database"""
+    """carrys out insert of anime for database"""
     try:
         # curs.execute(" ALTER SEQUENCE stories_id_seq RESTART WITH 1;")
         for index, anime in enumerate(anime_titles):
@@ -29,7 +30,7 @@ def adding_animes(anime_titles, start_id, end_id, show_type_id):
 
 
 def adding_repeated_info(list_data, type_addition):
-    """inserts and gets ids of tags which are being scrapped"""
+    """inserts dates and type info which are scrapped"""
     try:
         column = ""
         if type_addition == "dates":
@@ -52,11 +53,12 @@ def adding_repeated_info(list_data, type_addition):
 
 
 def dates_return_id(date_year, type_addition, column):
-    """returns the id of inserted or existing tag"""
+    """returns the id of inserted or existing dates or type"""
     data = sql_execute(f"SELECT {type_addition}.{type_addition}_id FROM {type_addition} WHERE {type_addition}.{column} =%s",[date_year])
     return data
 
 def get_anime_sql():
+    """sql to get top 50 animes"""
     sql_command = """SELECT * FROM animes;"""
     data = sql_execute(sql_command,None)
     return data
@@ -76,7 +78,7 @@ def sql_execute(sql,params):
 
 
 def sql_insert_data(sql,params):
-    """handles most sql inserts"""
+    """handles sql inserts"""
     curs = conn.cursor(cursor_factory = psycopg2.extras.RealDictCursor)
     curs.execute(sql, params)
     conn.commit()

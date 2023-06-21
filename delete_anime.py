@@ -1,3 +1,4 @@
+"""deletes top 50 animes from crontab"""
 import psycopg2
 import psycopg2.extras 
 
@@ -18,6 +19,7 @@ create table if not exists animes (
 );"""
 
 def restart_animes_table(conn):
+    """executes dropping table and creating table"""
     try:
         with conn.cursor() as cur:
             cur.execute(DELETE_CREATE_ANIME_SQL, )

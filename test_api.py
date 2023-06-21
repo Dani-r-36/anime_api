@@ -1,3 +1,4 @@
+"""test functions for some of the scarper and api endpoints"""
 import json
 from unittest.mock import patch
 import unittest.mock as mock

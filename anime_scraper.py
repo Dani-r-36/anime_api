@@ -1,3 +1,4 @@
+"""This script is used to scrap myanimelist site for anime details"""
 from urllib.request import urlopen
 from urllib.error import URLError
 import psycopg2
@@ -17,13 +18,14 @@ ANIME_HOME = "https://myanimelist.net/anime.php"
 ANIME_DEFAULT = "https://myanimelist.net"
 
 def get_html(url):
-    """opens bbc website for extraction"""
+    """opens website for extraction"""
     with urlopen(url) as page:
         html_bytes = page.read()
         html = html_bytes.decode("utf_8")
     return html
 
 def parse_anime(url):
+    """Uses beautifulsoup to extract the html from the site"""
     try:
         html = get_html(url)
         soup = BeautifulSoup(html, "html.parser")
@@ -33,6 +35,8 @@ def parse_anime(url):
         return "error"
 
 def get_anime_similar(soup, query):
+    """Not used function"""
+    """scapes all anime similar to queried function"""
     animes_title = []
     animes_url = []
     animes = soup.select("a.hoverinfo_trigger")
@@ -49,6 +53,7 @@ def get_anime_similar(soup, query):
     return anime_url, anime_title
 
 def check_request(animes, animes_url, type_request, query):
+    """checks how similar query is to list of similar anime or anime generes"""
     found = False
     while found == False:
         for anime in animes:
@@ -59,6 +64,7 @@ def check_request(animes, animes_url, type_request, query):
         return None, None
 
 def extract_anime_info(soup, anime_title):
+    """extracts anime details from html text"""
     details = soup.find("div", {"class": "stats-block po-r clearfix"})
     score_div = details.find("div", {"class": "score-label"})
     score = score_div.text
@@ -79,6 +85,7 @@ def extract_anime_info(soup, anime_title):
     return json.dumps(anime_data)
 
 def get_anime_genre(soup, query):
+    """extracts all genres from html and urls"""
     anime_genre_split = []
     anime_genre_link = []
     genres = soup.select('div.normal_header.pt24.mb0')
@@ -95,6 +102,7 @@ def get_anime_genre(soup, query):
     return anime_url, anime_genre_split, actual_genre
 
 def extract_anime_genre_info(animes_soup, query):
+    """extracts animes from specific genre"""
     anime_list = []
     anime_urls = []
     genre_animes = animes_soup.select("div.js-anime-category-producer.seasonal-anime.js-seasonal-anime.js-anime-type-all.js-anime-type-1")
@@ -106,6 +114,7 @@ def extract_anime_genre_info(animes_soup, query):
     return anime_urls, anime_list
 
 def parse_query(query):
+    """replaces space with html space %20"""
     if query == None or query == '':
             raise ValueError
     if " " in query:
@@ -115,6 +124,7 @@ def parse_query(query):
     return url_query
 
 def top_anime_extract(top_soup):
+    """extracts top 50 anime and details"""
     anime_info = {}
     anime_list = []
     top_anime = top_soup.select("tr.ranking-list")
@@ -132,16 +142,10 @@ def top_anime_extract(top_soup):
         anime_info = {"anime":anime_name, "anime_url": anime_url, "type_genre": type_genre,
                       "eps": eps, "start": start_year, "end": end_year, "score": score}
         anime_list.append(anime_info)
-    # print("anime list " , len(anime_list),)
-    # print("anime anime_urls ",len(anime_urls),)
-    # print("type  ",len(type_list),)
-    # print("eps_list  " ,len(eps_list),)
-    # print("start_list  ",(start_list),)
-    # print("end_list  ",(end_list),)
-    # print("score_list  ",len(score_list),)
     return anime_list
 
 def additional_top_anime(anime_details):
+    """formats top 50 anime details"""
     anime_year = anime_details[1].strip().split('\n')
     start_year, end_year = anime_year[0].split(' - ')
     start_year = start_year.split()[-1]
@@ -152,8 +156,6 @@ def additional_top_anime(anime_details):
     return start_year, end_year, type_genre, eps
 
 if __name__ == "__main__":
-    # app.run(debug=True, host='0.0.0.0', port=5001)
-
     top = parse_anime("https://myanimelist.net/topanime.php")
     top_anime_extract(top)
     # query = input("genre request")

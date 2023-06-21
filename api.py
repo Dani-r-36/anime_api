@@ -1,3 +1,4 @@
+"""Api endpoints for anime api"""
 from urllib.error import URLError
 from flask import Flask, request, jsonify, render_template
 from anime_scraper import parse_anime, get_anime_similar, extract_anime_genre_info, extract_anime_info, get_anime_genre, parse_query
@@ -11,10 +12,13 @@ app = Flask(__name__)
 
 @app.route('/', methods=["GET"])
 def index():
+    """not working"""
+    """home page for api"""
     return render_template('home.html')
 
 @app.route("/anime/search", methods=["GET"])
 def search():
+    """endpoint to search for anime using anime_scraper"""
     try:
         query = request.args.get('query')
         url_query = parse_query(query)
@@ -36,12 +40,14 @@ def search():
 
 @app.route("/anime/allgenres", methods=["GET"])
 def all_genres():
+    """returns all genres from MAL"""
     genre_soup = parse_anime(ANIME_HOME)
     anime_genres_url, all_anime_genres, temp = get_anime_genre(genre_soup, None)
     return jsonify({"anime_genres": all_anime_genres})
 
 @app.route("/anime/genre", methods=["GET"])
 def genre_search():
+    """returns all anime in genre from scraper functions"""
     query = request.args.get('query')
     try:
         if query == None or query == '':
@@ -64,6 +70,7 @@ def genre_search():
     
 @app.route("/top_anime", methods=["GET"])
 def top_anime():
+    """returns top 50 anime using db functions"""
     try:
         data = get_top_anime()
         if len(data) == 0:
@@ -75,6 +82,7 @@ def top_anime():
         return ("Invalid query")
     
 def get_top_anime():
+    """function to help sort top 50 anime"""
     data = {}
     anime_list=[]
     unique_curs = get_anime_sql()
