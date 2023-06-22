@@ -1,12 +1,18 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title>Social News Site</title>
+    <style>
+      .logo {
+        display: flex;
+        justify-content: center;
+      }
+    </style>
+    <title>Anime</title>
   </head>
   <body>
-    <header>
-      <h1>Very Good™️ Social News Site</h1>
-    </header>
+    <div class="logo">
+      <img src={{url_for('static', filename="/API.png")}} width="50%" />
+    </div>
     <main>
       <div id="anime-list">
         <h2>Anime Search Results</h2>

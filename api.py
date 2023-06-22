@@ -1,6 +1,6 @@
 """Api endpoints for anime api"""
 from urllib.error import URLError
-from flask import Flask, request, jsonify, render_template
+from flask import Flask, request, jsonify, render_template, current_app
 from anime_scraper import parse_anime, get_anime_similar, extract_anime_genre_info, extract_anime_info, get_anime_genre, parse_query
 from upload_db import get_anime_sql, error_message
 
@@ -15,6 +15,7 @@ def index():
     """not working"""
     """home page for api"""
     return render_template('home.html')
+    # return current_app.send_static_file("home.html")
 
 @app.route("/anime/search", methods=["GET"])
 def search():
